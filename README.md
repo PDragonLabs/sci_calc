@@ -8,7 +8,7 @@ Designed for students, engineers, astronomers, and space enthusiasts. Clean, fut
 
 ---
 
-![Prieview live](https://pdragonlabs.github.io/sci_calc/)
+**[Try Live Demo](https://pdragonlabs.github.io/sci_calc/)
 
 ## ✨ Features
 
