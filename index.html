@@ -16,6 +16,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
         }
         .calculator {
             background: rgba(10, 10, 30, 0.95);
@@ -23,7 +24,7 @@
             border-radius: 20px;
             padding: 20px;
             width: 420px;
-            box-shadow: 0 0 40px #00ffcc88;
+            box-shadow: 0 0 40px #00ffcc88, inset 0 0 20px #00ffff44;
         }
         .display {
             background: #000;
@@ -34,6 +35,8 @@
             text-align: right;
             font-size: 2.2rem;
             min-height: 90px;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px #000;
             color: #00ffcc;
         }
         .mode-tabs {
@@ -48,6 +51,8 @@
             padding: 10px;
             text-align: center;
             cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
         }
         .mode-tab.active {
             background: #00ffcc;
@@ -63,23 +68,50 @@
             background: #1a1a2e;
             color: #00ffcc;
             border: 1px solid #00ccaa;
-            padding: 18px 8px;
+            padding: 18px 10px;
             font-size: 1.1rem;
             border-radius: 10px;
             cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Orbitron', sans-serif;
         }
         button:hover {
             background: #00ffcc;
             color: #000;
+            transform: scale(1.05);
         }
-        button.operator { background: #003322; color: #00ff99; }
-        button.func { background: #220033; font-size: 0.95rem; }
-        button.equals { background: #00cc66; color: #000; font-weight: bold; }
+        button.operator {
+            background: #003322;
+            color: #00ff99;
+        }
+        button.func {
+            background: #220033;
+            font-size: 0.95rem;
+        }
+        button.equals {
+            background: #00cc66;
+            color: #000;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .history {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: right;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h1 style="text-align:center; margin-bottom:15px; font-size:1.7rem;">STELLARCALC</h1>
+        <h1 style="text-align:center; margin-bottom:10px; font-size:1.6rem; letter-spacing:3px;">STELLARCALC</h1>
         
         <div class="mode-tabs">
             <div class="mode-tab active" onclick="setMode(0)">Scientific</div>
@@ -88,8 +120,9 @@
         </div>
 
         <div class="display" id="display">0</div>
+        <div class="history" id="history"></div>
 
-        <!-- Scientific Panel -->
+        <!-- Scientific Mode -->
         <div id="panel-0" class="panel">
             <div class="buttons">
                 <button class="func" onclick="clearAll()">AC</button>
@@ -122,57 +155,240 @@
                 <button class="equals" onclick="calculate()">=</button>
                 <button class="func" onclick="appendToDisplay('**')">^</button>
             </div>
+
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-top:12px;">
+                <button class="func" onclick="trig('sin')">sin</button>
+                <button class="func" onclick="trig('cos')">cos</button>
+                <button class="func" onclick="trig('tan')">tan</button>
+                <button class="func" onclick="appendToDisplay('Math.log10(')">log</button>
+                <button class="func" onclick="appendToDisplay('Math.log(')">ln</button>
+                
+                <button class="func" onclick="appendToDisplay('1/')">1/x</button>
+                <button class="func" onclick="square()">x²</button>
+                <button class="func" onclick="cube()">x³</button>
+                <button class="func" onclick="appendToDisplay('Math.exp(')">eˣ</button>
+                <button class="func" onclick="factorial()">n!</button>
+            </div>
         </div>
 
-        <script>
-            let expression = '0';
-            let display = document.getElementById('display');
+        <!-- Physics Mode -->
+        <div id="panel-1" class="panel" style="display:none;">
+            <div style="margin-bottom:10px; font-size:0.9rem; text-align:center;">Common Physics Formulas</div>
+            <div class="buttons" style="grid-template-columns: repeat(3, 1fr);">
+                <button onclick="physicsKE()">KE (½mv²)</button>
+                <button onclick="physicsPE()">PE (mgh)</button>
+                <button onclick="physicsFMA()">F = ma</button>
+                
+                <button onclick="physicsEscape()">Escape Vel.</button>
+                <button onclick="physicsOrbital()">Orbital Vel.</button>
+                <button onclick="physicsGravity()">Gravity Force</button>
+            </div>
+            <textarea id="physicsInput" style="width:100%; height:80px; background:#000; color:#0ff; border:1px solid #0ff; margin-top:10px; padding:8px; font-family:monospace;" placeholder="Enter values like: m=5, v=10"></textarea>
+            <button onclick="runPhysicsFormula()" style="width:100%; margin-top:8px; padding:12px;">Calculate</button>
+        </div>
 
-            function appendToDisplay(val) {
-                if (expression === '0' && val !== '.') expression = '';
-                expression += val;
+        <!-- Space Mode -->
+        <div id="panel-2" class="panel" style="display:none;">
+            <div style="margin-bottom:10px; font-size:0.9rem; text-align:center;">Space & Astronomy Tools</div>
+            <div class="buttons" style="grid-template-columns: repeat(3, 1fr);">
+                <button onclick="spaceLightYear()">Light Year → km</button>
+                <button onclick="spaceAU()">AU → km</button>
+                <button onclick="spaceParsec()">Parsec → ly</button>
+                
+                <button onclick="spaceSchwarzschild()">Black Hole Radius</button>
+                <button onclick="spaceHubble()">Hubble Law</button>
+                <button onclick="appendToDisplay('299792458')">c (m/s)</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            StellarCalc v1.0 • Built for explorers
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 0;
+        let display = document.getElementById('display');
+        let historyDiv = document.getElementById('history');
+        let expression = '0';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === mode);
+            });
+            document.querySelectorAll('.panel').forEach((panel, i) => {
+                panel.style.display = i === mode ? 'block' : 'none';
+            });
+        }
+
+        function appendToDisplay(value) {
+            if (expression === '0' && value !== '.') expression = '';
+            expression += value;
+            display.textContent = expression || '0';
+        }
+
+        function backspace() {
+            expression = expression.slice(0, -1);
+            if (!expression) expression = '0';
+            display.textContent = expression;
+        }
+
+        function clearAll() {
+            expression = '0';
+            display.textContent = '0';
+        }
+
+        function calculate() {
+            try {
+                let result = eval(expression.replace('^', '**').replace('×', '*').replace('÷', '/'));
+                if (!isFinite(result)) throw "Error";
+                
+                addToHistory(expression + ' = ' + result.toPrecision(8));
+                expression = result.toString();
                 display.textContent = expression;
+            } catch (e) {
+                display.textContent = 'Error';
+                setTimeout(() => { display.textContent = '0'; expression = '0'; }, 1500);
             }
+        }
 
-            function backspace() {
-                expression = expression.slice(0, -1);
-                if (!expression) expression = '0';
+        function trig(func) {
+            try {
+                let val = parseFloat(expression) || 0;
+                let rad = val * Math.PI / 180; // degrees to radians
+                let res;
+                if (func === 'sin') res = Math.sin(rad);
+                else if (func === 'cos') res = Math.cos(rad);
+                else if (func === 'tan') res = Math.tan(rad);
+                expression = res.toFixed(8);
                 display.textContent = expression;
-            }
+            } catch(e) {}
+        }
 
-            function clearAll() {
-                expression = '0';
-                display.textContent = '0';
-            }
-
-            function calculate() {
-                try {
-                    let result = eval(expression.replace('^','**').replace('×','*').replace('÷','/'));
-                    expression = result.toString();
-                    display.textContent = expression;
-                } catch(e) {
-                    display.textContent = 'Error';
-                    setTimeout(() => { expression = '0'; display.textContent = '0'; }, 1200);
-                }
-            }
-
-            function sqrt() {
-                let val = parseFloat(expression);
+        function sqrt() {
+            try {
+                let val = parseFloat(expression) || 0;
                 expression = Math.sqrt(val).toString();
                 display.textContent = expression;
-            }
+            } catch(e) {}
+        }
 
-            function setMode(n) {
-                alert("Mode " + (n+1) + " selected (Physics & Space coming soon in full version)");
-            }
+        function square() {
+            try {
+                let val = parseFloat(expression) || 0;
+                expression = (val * val).toString();
+                display.textContent = expression;
+            } catch(e) {}
+        }
 
-            // Keyboard support
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Enter') calculate();
-                if (e.key === 'Backspace') backspace();
-                if (e.key === 'Escape') clearAll();
-            });
-        </script>
-    </div>
+        function cube() {
+            try {
+                let val = parseFloat(expression) || 0;
+                expression = (val * val * val).toString();
+                display.textContent = expression;
+            } catch(e) {}
+        }
+
+        function factorial() {
+            try {
+                let n = Math.floor(parseFloat(expression));
+                if (n < 0 || n > 20) throw "Error";
+                let res = 1;
+                for(let i=2; i<=n; i++) res *= i;
+                expression = res.toString();
+                display.textContent = expression;
+            } catch(e) {
+                display.textContent = 'Error';
+            }
+        }
+
+        function addToHistory(text) {
+            let entry = document.createElement('div');
+            entry.textContent = text;
+            historyDiv.appendChild(entry);
+            if (historyDiv.children.length > 8) historyDiv.removeChild(historyDiv.children[0]);
+        }
+
+        // Physics Functions
+        function physicsKE() {
+            let input = prompt("Kinetic Energy: Enter m (kg) and v (m/s) separated by comma", "5,10");
+            if (!input) return;
+            let [m, v] = input.split(',').map(Number);
+            let ke = 0.5 * m * v * v;
+            alert(`Kinetic Energy = ${ke.toFixed(4)} Joules`);
+            addToHistory(`KE(${m}, ${v}) = ${ke.toFixed(4)} J`);
+        }
+
+        function physicsPE() {
+            let input = prompt("Potential Energy: Enter m (kg), g (9.8), h (m)", "10,9.8,5");
+            let [m, g, h] = input.split(',').map(Number);
+            let pe = m * g * h;
+            alert(`Potential Energy = ${pe.toFixed(4)} Joules`);
+        }
+
+        function physicsFMA() {
+            let input = prompt("F = m × a\nEnter m (kg) and a (m/s²)", "10,9.8");
+            let [m, a] = input.split(',').map(Number);
+            alert(`Force = ${(m*a).toFixed(4)} Newtons`);
+        }
+
+        function physicsEscape() {
+            let input = prompt("Escape Velocity\nEnter M (kg) and r (m)", "5.97e24,6371000");
+            let [M, r] = input.split(',').map(Number);
+            let v = Math.sqrt(2 * 6.67430e-11 * M / r);
+            alert(`Escape Velocity ≈ ${v.toFixed(2)} m/s`);
+        }
+
+        function physicsOrbital() {
+            let input = prompt("Orbital Velocity (circular)\nEnter M (kg) and r (m)", "5.97e24,6371000");
+            let [M, r] = input.split(',').map(Number);
+            let v = Math.sqrt(6.67430e-11 * M / r);
+            alert(`Orbital Velocity ≈ ${v.toFixed(2)} m/s`);
+        }
+
+        function runPhysicsFormula() {
+            let input = document.getElementById('physicsInput').value;
+            alert("Physics calculator ready! Use the quick buttons above.\n\nExample formulas are available via the buttons.");
+        }
+
+        // Space Functions
+        function spaceLightYear() {
+            alert("1 Light Year ≈ 9.46073 × 10¹² km");
+        }
+        function spaceAU() {
+            alert("1 AU ≈ 149,597,870 km");
+        }
+        function spaceParsec() {
+            alert("1 Parsec ≈ 3.26 Light Years");
+        }
+        function spaceSchwarzschild() {
+            let m = parseFloat(prompt("Black Hole Schwarzschild Radius\nEnter mass in Solar Masses (M☉)", "10"));
+            let rs = 2 * 6.67430e-11 * (m * 1.989e30) / (299792458 ** 2);
+            alert(`Schwarzschild Radius ≈ ${rs.toFixed(0)} meters (${(rs/1000).toFixed(2)} km)`);
+        }
+        function spaceHubble() {
+            let d = parseFloat(prompt("Hubble's Law: v = H₀ × d\nEnter distance in Mpc (H₀=70 km/s/Mpc)", "100"));
+            let v = 70 * d;
+            alert(`Recession velocity ≈ ${v.toFixed(0)} km/s`);
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (e.key >= '0' && e.key <= '9') appendToDisplay(e.key);
+            if (e.key === '.') appendToDisplay('.');
+            if (e.key === '+') appendToDisplay('+');
+            if (e.key === '-') appendToDisplay('-');
+            if (e.key === '*') appendToDisplay('*');
+            if (e.key === '/') appendToDisplay('/');
+            if (e.key === 'Enter' || e.key === '=') calculate();
+            if (e.key === 'Backspace') backspace();
+            if (e.key === 'Escape') clearAll();
+        });
+
+        // Initialize
+        display.textContent = '0';
+        console.log("%cStellarCalc loaded successfully! 🚀", "color:#00ffcc; font-size:14px; font-family:Orbitron");
+    </script>
 </body>
 </html>
