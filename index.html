@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StellarCalc • Scientific + Physics + Space</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #0a0a1f, #1a0033);
+            color: #00ffcc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .calculator {
+            background: rgba(10, 10, 30, 0.95);
+            border: 3px solid #00ffcc;
+            border-radius: 20px;
+            padding: 20px;
+            width: 420px;
+            box-shadow: 0 0 40px #00ffcc88;
+        }
+        .display {
+            background: #000;
+            border: 2px solid #00ffcc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: right;
+            font-size: 2.2rem;
+            min-height: 90px;
+            color: #00ffcc;
+        }
+        .mode-tabs {
+            display: flex;
+            background: #1a0033;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .mode-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .mode-tab.active {
+            background: #00ffcc;
+            color: #000;
+            font-weight: bold;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        button {
+            background: #1a1a2e;
+            color: #00ffcc;
+            border: 1px solid #00ccaa;
+            padding: 18px 8px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #00ffcc;
+            color: #000;
+        }
+        button.operator { background: #003322; color: #00ff99; }
+        button.func { background: #220033; font-size: 0.95rem; }
+        button.equals { background: #00cc66; color: #000; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1 style="text-align:center; margin-bottom:15px; font-size:1.7rem;">STELLARCALC</h1>
+        
+        <div class="mode-tabs">
+            <div class="mode-tab active" onclick="setMode(0)">Scientific</div>
+            <div class="mode-tab" onclick="setMode(1)">Physics</div>
+            <div class="mode-tab" onclick="setMode(2)">Space</div>
+        </div>
 
+        <div class="display" id="display">0</div>
+
+        <!-- Scientific Panel -->
+        <div id="panel-0" class="panel">
+            <div class="buttons">
+                <button class="func" onclick="clearAll()">AC</button>
+                <button class="func" onclick="appendToDisplay('(')">(</button>
+                <button class="func" onclick="appendToDisplay(')')">)</button>
+                <button class="func" onclick="appendToDisplay('%')">%</button>
+                <button class="func operator" onclick="appendToDisplay('/')">÷</button>
+
+                <button onclick="appendToDisplay('7')">7</button>
+                <button onclick="appendToDisplay('8')">8</button>
+                <button onclick="appendToDisplay('9')">9</button>
+                <button class="operator" onclick="appendToDisplay('*')">×</button>
+                <button class="func" onclick="appendToDisplay('Math.PI')">π</button>
+
+                <button onclick="appendToDisplay('4')">4</button>
+                <button onclick="appendToDisplay('5')">5</button>
+                <button onclick="appendToDisplay('6')">6</button>
+                <button class="operator" onclick="appendToDisplay('-')">−</button>
+                <button class="func" onclick="appendToDisplay('Math.E')">e</button>
+
+                <button onclick="appendToDisplay('1')">1</button>
+                <button onclick="appendToDisplay('2')">2</button>
+                <button onclick="appendToDisplay('3')">3</button>
+                <button class="operator" onclick="appendToDisplay('+')">+</button>
+                <button class="func" onclick="sqrt()">√</button>
+
+                <button onclick="appendToDisplay('0')">0</button>
+                <button onclick="appendToDisplay('.')">.</button>
+                <button onclick="backspace()">⌫</button>
+                <button class="equals" onclick="calculate()">=</button>
+                <button class="func" onclick="appendToDisplay('**')">^</button>
+            </div>
+        </div>
+
+        <script>
+            let expression = '0';
+            let display = document.getElementById('display');
+
+            function appendToDisplay(val) {
+                if (expression === '0' && val !== '.') expression = '';
+                expression += val;
+                display.textContent = expression;
+            }
+
+            function backspace() {
+                expression = expression.slice(0, -1);
+                if (!expression) expression = '0';
+                display.textContent = expression;
+            }
+
+            function clearAll() {
+                expression = '0';
+                display.textContent = '0';
+            }
+
+            function calculate() {
+                try {
+                    let result = eval(expression.replace('^','**').replace('×','*').replace('÷','/'));
+                    expression = result.toString();
+                    display.textContent = expression;
+                } catch(e) {
+                    display.textContent = 'Error';
+                    setTimeout(() => { expression = '0'; display.textContent = '0'; }, 1200);
+                }
+            }
+
+            function sqrt() {
+                let val = parseFloat(expression);
+                expression = Math.sqrt(val).toString();
+                display.textContent = expression;
+            }
+
+            function setMode(n) {
+                alert("Mode " + (n+1) + " selected (Physics & Space coming soon in full version)");
+            }
+
+            // Keyboard support
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Enter') calculate();
+                if (e.key === 'Backspace') backspace();
+                if (e.key === 'Escape') clearAll();
+            });
+        </script>
+    </div>
+</body>
+</html>
